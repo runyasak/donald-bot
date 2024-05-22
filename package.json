@@ -1,6 +1,7 @@
 {
   "name": "donald-bot",
   "version": "1.0.50",
+  "module": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts"
@@ -9,11 +10,11 @@
     "elysia": "latest"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^2.18.1",
     "@eslint/js": "^9.3.0",
     "bun-types": "latest",
     "eslint": "9.x",
     "globals": "^15.3.0",
     "typescript-eslint": "^7.10.0"
-  },
-  "module": "src/index.js"
+  }
 }
