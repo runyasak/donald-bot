@@ -7,6 +7,7 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "discord-interactions": "^3.4.0",
     "elysia": "latest"
   },
   "devDependencies": {
