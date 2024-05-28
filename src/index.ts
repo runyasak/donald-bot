@@ -1,5 +1,4 @@
-import { Buffer } from 'node:buffer'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions'
 import { client } from './db'
 
@@ -7,11 +6,12 @@ await client.connect().then(() => console.info('connect success!!'))
 
 const app = new Elysia()
   .post('/interactions', (req) => {
-    const { type, id, data } = req.body as any
+    const { type, data } = req.body
 
-    console.log(id)
+    if (type === InteractionType.PING)
+      return { type: InteractionResponseType.PONG }
 
-    if (type === InteractionType.APPLICATION_COMMAND) {
+    if (type === InteractionType.APPLICATION_COMMAND && data) {
       const { name } = data
 
       if (name === 'test') {
@@ -24,40 +24,34 @@ const app = new Elysia()
       }
     }
   }, {
-    // async beforeHandle({ request, set }) {
-    //   console.log('before handle !!')
-    //   console.log(request.headers)
-    //   const signature = request.headers.get('X-Signature-Ed25519')
-    //   const timestamp = request.headers.get('X-Signature-Timestamp')
+    async beforeHandle({ request, set, body }) {
+      const signature = request.headers.get('X-Signature-Ed25519')
+      const timestamp = request.headers.get('X-Signature-Timestamp')
 
-    //   if (!request.body)
-    //     return
+      if (!signature || !timestamp)
+        return
 
-    //   console.log('request.body', request.body)
+      const isValidRequest = verifyKey(
+        JSON.stringify(body),
+        signature,
+        timestamp,
+        Bun.env.PUBLIC_KEY || '',
+      )
 
-    //   if (!signature || !timestamp)
-    //     return
-
-    //   // request.arrayBuffer().catch(reason => console.error(reason))
-
-    //   const rawBody = await request.clone().arrayBuffer()
-    //   console.log('rawBody', rawBody)
-
-    //   console.log('verifyKey', {
-    //     rawBody,
-    //     signature,
-    //     timestamp,
-    //     PUBLIC_KEY: Bun.env.PUBLIC_KEY || '',
-    //   })
-    //   const isValidRequest = verifyKey(rawBody, signature, timestamp, Bun.env.PUBLIC_KEY || '')
-
-    //   console.log('isValidRequest', isValidRequest)
-
-    //   if (!isValidRequest) {
-    //     set.status = 401
-    //     return 'Bad request signature'
-    //   }
-    // },
+      if (!isValidRequest) {
+        set.status = 401
+        return 'Bad request signature'
+      }
+    },
+    body: t.Object({
+      type: t.Numeric(),
+      data: t.Optional(
+        t.Object({
+          name: t.String(),
+        }),
+      ),
+      id: t.Numeric(),
+    }),
   })
   .get('/', () => 'Hello Elysia')
   .listen(3000)
