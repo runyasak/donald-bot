@@ -33,6 +33,7 @@ const app = new Elysia()
       if (!request.body)
         return
 
+      console.log('request.body', request.body)
       const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body)
       const rawBody = Buffer.from(arrayBuffer)
 
