@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
-    "register": "bun run src/command.ts"
+    "register": "bun run src/command.ts",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "discord-interactions": "^3.4.0",
