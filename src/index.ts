@@ -24,31 +24,40 @@ const app = new Elysia()
       }
     }
   }, {
-    async beforeHandle({ request, set }) {
-      console.log('before handle !!')
-      console.log(request.headers)
-      const signature = request.headers.get('X-Signature-Ed25519')
-      const timestamp = request.headers.get('X-Signature-Timestamp')
+    // async beforeHandle({ request, set }) {
+    //   console.log('before handle !!')
+    //   console.log(request.headers)
+    //   const signature = request.headers.get('X-Signature-Ed25519')
+    //   const timestamp = request.headers.get('X-Signature-Timestamp')
 
-      if (!request.body)
-        return
+    //   if (!request.body)
+    //     return
 
-      console.log('request.body', request.body)
-      const arrayBuffer = await Bun.readableStreamToArrayBuffer(request.body)
-      const rawBody = Buffer.from(arrayBuffer)
+    //   console.log('request.body', request.body)
 
-      console.log('rawBody', rawBody)
+    //   if (!signature || !timestamp)
+    //     return
 
-      if (!signature || !timestamp)
-        return
+    //   // request.arrayBuffer().catch(reason => console.error(reason))
 
-      const isValidRequest = verifyKey(rawBody, signature, timestamp, Bun.env.PUBLIC_KEY || '')
+    //   const rawBody = await request.clone().arrayBuffer()
+    //   console.log('rawBody', rawBody)
 
-      if (!isValidRequest) {
-        set.status = 401
-        return 'Bad request signature'
-      }
-    },
+    //   console.log('verifyKey', {
+    //     rawBody,
+    //     signature,
+    //     timestamp,
+    //     PUBLIC_KEY: Bun.env.PUBLIC_KEY || '',
+    //   })
+    //   const isValidRequest = verifyKey(rawBody, signature, timestamp, Bun.env.PUBLIC_KEY || '')
+
+    //   console.log('isValidRequest', isValidRequest)
+
+    //   if (!isValidRequest) {
+    //     set.status = 401
+    //     return 'Bad request signature'
+    //   }
+    // },
   })
   .get('/', () => 'Hello Elysia')
   .listen(3000)
