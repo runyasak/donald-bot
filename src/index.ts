@@ -1,12 +1,13 @@
 import { Elysia, t } from 'elysia'
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions'
 import { client } from './db'
+import type { DiscordRequestBody } from './model'
 
 await client.connect().then(() => console.info('connect success!!'))
 
 const app = new Elysia()
   .post('/interactions', (req) => {
-    const { type, data } = req.body
+    const { type, data } = req.body as DiscordRequestBody
 
     if (type === InteractionType.PING)
       return { type: InteractionResponseType.PONG }
@@ -18,7 +19,17 @@ const app = new Elysia()
         return {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: `hello Donald !!`,
+            content: 'hello Donald !!',
+          },
+        }
+      }
+
+      if (name === 'leave') {
+        console.log('body', req.body)
+        return {
+          type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+          data: {
+            content: 'This is leave command!!',
           },
         }
       }
@@ -43,15 +54,6 @@ const app = new Elysia()
         return 'Bad request signature'
       }
     },
-    body: t.Object({
-      type: t.Numeric(),
-      data: t.Optional(
-        t.Object({
-          name: t.String(),
-        }),
-      ),
-      id: t.Numeric(),
-    }),
   })
   .get('/', () => 'Hello Elysia')
   .listen(3000)
