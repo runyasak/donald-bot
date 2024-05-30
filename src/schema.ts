@@ -3,6 +3,7 @@ import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core'
 export const vacationUsersTable = pgTable('vacation_users', {
   id: serial('id').primaryKey(),
   userId: text('user_id').notNull(),
+  userNickname: text('user_nickname').notNull(),
   leftAt: timestamp('left_at').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at')
