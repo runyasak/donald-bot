@@ -51,7 +51,7 @@ export interface DiscordRequestBody {
     pending: boolean
     permissions: string
     premium_since: string | null
-    roles: unknown[]
+    roles: string[]
     unusual_dm_activity_until: unknown | null
     user: {
       avatar: string

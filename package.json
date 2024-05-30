@@ -9,6 +9,7 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
+    "dayjs": "^1.11.11",
     "discord-interactions": "^3.4.0",
     "drizzle-orm": "^0.30.10",
     "elysia": "latest",
