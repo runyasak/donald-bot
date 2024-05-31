@@ -2,9 +2,12 @@ import { Elysia } from 'elysia'
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
+import { cron } from '@elysiajs/cron'
 import { client, db } from './db'
 import type { DiscordRequestBody } from './model'
+import type { SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
+import { DiscordRequest } from './utils'
 
 dayjs.extend(customParseFormat)
 
@@ -13,6 +16,27 @@ await client.connect().then(() => console.info('connect success!!'))
 const dateFormat = 'DD/MM/YYYY'
 
 const app = new Elysia()
+  .use(
+    cron({
+      name: 'vacation_users',
+      pattern: '30 09 * * 1-5',
+      async run() {
+        const today = dayjs().startOf('day').toDate()
+        const vacationUsers = await db.query.vacationUsersTable.findMany({
+          where: (users, { eq }) => eq(users.leftAt, today),
+        })
+
+        const content = vacationUsers.length === 0
+          ? `<@${'1245768458499522641'}> วันนี้ไม่มีคนลานะทุกคน`
+          : `<@${'1245768458499522641'}> วันนี้คนที่ลาคือ ${mapJoinUserNickname(vacationUsers)}`
+
+        DiscordRequest(`/channels/${Bun.env.VACATION_USERS_NOTIFICATION_CHANNEL_ID}/messages`, {
+          body: { content, tts: false },
+          method: 'POST',
+        })
+      },
+    }),
+  )
   .post('/interactions', async ({ body }) => {
     const discordBody = body as DiscordRequestBody
     const { type, data } = discordBody as DiscordRequestBody
@@ -27,7 +51,7 @@ const app = new Elysia()
         return {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: 'hello Donald !!',
+            content: 'Hello Donald',
           },
         }
       }
@@ -86,5 +110,9 @@ const app = new Elysia()
   })
   .get('/', () => 'Hello Donald!!')
   .listen(3000)
+
+function mapJoinUserNickname<T extends SelectVacationUsers>(users: T[]) {
+  return users.map(user => user.userNickname).join(', ')
+}
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
