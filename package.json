@@ -9,6 +9,7 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
+    "@bogeychan/elysia-logger": "^0.0.22",
     "@elysiajs/cron": "^1.0.3",
     "dayjs": "^1.11.11",
     "discord-interactions": "^3.4.0",

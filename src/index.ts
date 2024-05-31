@@ -3,6 +3,7 @@ import { InteractionResponseType, InteractionType, verifyKey } from 'discord-int
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
+import { logger } from '@bogeychan/elysia-logger'
 import { client, db } from './db'
 import type { DiscordRequestBody } from './model'
 import type { SelectVacationUsers } from './schema'
@@ -16,6 +17,11 @@ await client.connect().then(() => console.info('connect success!!'))
 const dateFormat = 'DD/MM/YYYY'
 
 const app = new Elysia()
+  .use(
+    logger({
+      level: 'error',
+    }),
+  )
   .use(
     cron({
       name: 'vacation_users',
@@ -37,6 +43,10 @@ const app = new Elysia()
       },
     }),
   )
+  .onBeforeHandle(({ log, request }) => {
+    log.error(request, 'Error')
+    log.info(request, 'Request Info') // noop
+  })
   .post('/interactions', async ({ body }) => {
     const discordBody = body as DiscordRequestBody
     const { type, data } = discordBody as DiscordRequestBody
