@@ -7,7 +7,7 @@ import { client, db } from './db'
 import type { DiscordRequestBody } from './model'
 import type { SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
-import { DiscordRequest } from './utils'
+import { discordRequest } from './utils'
 
 dayjs.extend(customParseFormat)
 
@@ -30,7 +30,7 @@ const app = new Elysia()
           ? `<@${'1245768458499522641'}> วันนี้ไม่มีคนลานะทุกคน`
           : `<@${'1245768458499522641'}> วันนี้คนที่ลาคือ ${mapJoinUserNickname(vacationUsers)}`
 
-        DiscordRequest(`/channels/${Bun.env.VACATION_USERS_NOTIFICATION_CHANNEL_ID}/messages`, {
+        discordRequest(`/channels/${Bun.env.VACATION_USERS_NOTIFICATION_CHANNEL_ID}/messages`, {
           body: { content, tts: false },
           method: 'POST',
         })

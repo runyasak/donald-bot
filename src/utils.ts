@@ -1,6 +1,19 @@
 import type { DiscordRequestCommand } from './model'
 
-export async function DiscordRequest(endpoint: string, options: Omit<FetchRequestInit, 'body'> & { body: any }) {
+export async function installGlobalCommands(appId: string, commands: DiscordRequestCommand[]) {
+  // API endpoint to overwrite global commands
+  const endpoint = `applications/${appId}/commands`
+
+  try {
+    // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
+    await discordRequest(endpoint, { method: 'PUT', body: commands as unknown as BodyInit })
+  }
+  catch (err) {
+    console.error(err)
+  }
+}
+
+export async function discordRequest(endpoint: string, options: Omit<FetchRequestInit, 'body'> & { body: any }) {
   const url = `https://discord.com/api/v10/${endpoint}`
 
   if (options.body)
@@ -22,17 +35,4 @@ export async function DiscordRequest(endpoint: string, options: Omit<FetchReques
   }
 
   return res
-}
-
-export async function InstallGlobalCommands(appId: string, commands: DiscordRequestCommand[]) {
-  // API endpoint to overwrite global commands
-  const endpoint = `applications/${appId}/commands`
-
-  try {
-    // This is calling the bulk overwrite endpoint: https://discord.com/developers/docs/interactions/application-commands#bulk-overwrite-global-application-commands
-    await DiscordRequest(endpoint, { method: 'PUT', body: commands as unknown as BodyInit })
-  }
-  catch (err) {
-    console.error(err)
-  }
 }

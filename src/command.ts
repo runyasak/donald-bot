@@ -1,4 +1,4 @@
-import { InstallGlobalCommands } from './utils'
+import { installGlobalCommands } from './utils'
 
 const testCommand = {
   name: 'test',
@@ -20,7 +20,7 @@ const leaveCommand = {
   type: 1,
 }
 
-InstallGlobalCommands(
+installGlobalCommands(
   Bun.env.APP_ID || '',
   [testCommand, leaveCommand],
 ).then(() => console.log('register success !!')).catch(reason => console.error(new Error(reason)))
