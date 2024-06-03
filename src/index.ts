@@ -14,6 +14,8 @@ dayjs.extend(customParseFormat)
 
 const dateFormat = 'DD/MM/YYYY'
 
+await client.connect()
+
 const app = new Elysia()
   .use(
     logger({
@@ -85,9 +87,7 @@ const app = new Elysia()
           || discordBody.member?.user.username
           || ''
 
-        await client.connect()
         await db.insert(vacationUsersTable).values({ userId, userNickname, leftAt })
-        await client.end()
 
         return {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
