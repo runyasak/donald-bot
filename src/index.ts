@@ -52,8 +52,7 @@ const app = new Elysia()
     }),
   )
   .onBeforeHandle(({ log, request }) => {
-    log.error(request, 'Error')
-    log.info(request, 'Request Info') // noop
+    log.error(request, 'Before Handle')
   })
   .post('/interactions', async ({ body, log }) => {
     const discordBody = body as DiscordRequestBody
