@@ -32,6 +32,16 @@ const app = new Elysia()
   )
   .use(
     cron({
+      name: 'db_trigger',
+      pattern: '*/4 * * * 1-5',
+      paused: Bun.env.NODE_ENV !== 'production',
+      run() {
+        db.select().from(vacationUsersTable).then(result => console.log('db_trigger', result))
+      },
+    }),
+  )
+  .use(
+    cron({
       name: 'vacation_users',
       pattern: '30 09 * * 1-5',
       async run() {

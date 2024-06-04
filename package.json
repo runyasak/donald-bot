@@ -2,14 +2,11 @@
   "name": "donald-bot",
   "version": "1.0.50",
   "module": "src/index.js",
-  "engines": {
-    "node": "18.x"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/index.ts",
     "register": "bun run src/command.ts",
-    "start": "bun run src/index.ts"
+    "start": "NODE_ENV=production bun run src/index.ts"
   },
   "dependencies": {
     "@bogeychan/elysia-logger": "^0.0.22",
