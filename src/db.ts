@@ -4,6 +4,7 @@ import { vacationUsersTable } from './schema'
 
 export const client = new Client({
   connectionString: Bun.env.DB_CONNECTION_STRING,
+  keepAlive: true,
   ssl: true,
 })
 
