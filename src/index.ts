@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 import { InteractionResponseType, InteractionType, verifyKey } from 'discord-interactions'
+import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
@@ -12,7 +13,14 @@ import { discordRequest } from './utils'
 
 dayjs.extend(customParseFormat)
 
-const dateFormat = 'DD/MM/YYYY'
+const DATE_FORMAT = 'DD/MM/YYYY'
+
+const INVALID_DATE_RESPONSE = {
+  type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+  data: {
+    content: 'วันที่ไม่ตรงตาม format นะ 🤬 EX: 31/05/2024',
+  },
+}
 
 await client.connect()
 
@@ -47,9 +55,14 @@ const app = new Elysia()
     log.error(request, 'Error')
     log.info(request, 'Request Info') // noop
   })
-  .post('/interactions', async ({ body }) => {
+  .post('/interactions', async ({ body, log }) => {
     const discordBody = body as DiscordRequestBody
     const { type, data } = discordBody as DiscordRequestBody
+    const userId = discordBody.member?.user.id || ''
+    const userNickname = discordBody.member?.nick
+      || discordBody.member?.user.global_name
+      || discordBody.member?.user.username
+      || ''
 
     if (type === InteractionType.PING)
       return { type: InteractionResponseType.PONG }
@@ -69,30 +82,74 @@ const app = new Elysia()
       if (name === 'leave') {
         const leftAtInput = data.options && data.options.length > 0 ? data.options[0].value : null
 
-        if (!leftAtInput || !dayjs(leftAtInput, dateFormat).isValid()) {
+        if (!leftAtInput || !dayjs(leftAtInput, DATE_FORMAT).isValid())
+          return INVALID_DATE_RESPONSE
+
+        const leftAt = dayjs(leftAtInput, DATE_FORMAT).toDate()
+
+        try {
+          await db.insert(vacationUsersTable).values({ userId, userNickname, leftAt })
+
           return {
             type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
             data: {
-              content: 'วันที่ไม่ตรงตาม format นะ 🤬 EX: 31/05/2024',
+              content: `ทุกคน เดี๋ยว <@${userId}> จะลาวันที่ ${leftAtInput} นะ`,
+            },
+          }
+        }
+        catch (error) {
+          log.error(error, 'DB')
+        }
+      }
+
+      if (name === 'leave-from-to') {
+        const leftFromAtInput = data.options && data.options.find(option => option.name === 'from')?.value
+        const leftToAtInput = data.options && data.options.find(option => option.name === 'to')?.value
+
+        const leftFromDayjs = dayjs(leftFromAtInput, DATE_FORMAT)
+        const leftToDayjs = dayjs(leftToAtInput, DATE_FORMAT)
+
+        if (!leftFromAtInput || !leftToAtInput || !leftFromDayjs.isValid() || !leftToDayjs.isValid())
+          return INVALID_DATE_RESPONSE
+
+        if (leftFromDayjs.diff(leftToDayjs, 'days') > 0) {
+          return {
+            type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+            data: {
+              content: 'ใส่ from ให้น้อยกว่า to สิ 🤬',
             },
           }
         }
 
-        const userId = discordBody.member?.user.id || ''
+        const diffDays = leftToDayjs.diff(leftFromDayjs, 'days')
 
-        const leftAt = dayjs(leftAtInput, dateFormat).toDate()
+        const insertVacationData = Array.from(
+          { length: diffDays + 1 },
+          (_, index) => {
+            const leftAt = leftFromDayjs.add(index, 'day')
+            return {
+              userId,
+              userNickname,
+              leftAt: !isWeekend(leftAt) ? leftAt.toDate() : null,
+            }
+          },
+        ).filter(value => value.leftAt !== null) as {
+          userId: string
+          userNickname: string
+          leftAt: Date
+        }[]
 
-        const userNickname = discordBody.member?.nick
-          || discordBody.member?.user.global_name
-          || discordBody.member?.user.username
-          || ''
-
-        await db.insert(vacationUsersTable).values({ userId, userNickname, leftAt })
+        try {
+          await db.insert(vacationUsersTable).values(insertVacationData)
+        }
+        catch (error) {
+          log.error(error, 'DB')
+        }
 
         return {
           type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
           data: {
-            content: `ทุกคน เดี๋ยว <@${userId}> จะลาวันที่ ${leftAtInput} นะ`,
+            content: `ทุกคน เดี๋ยว <@${userId}> จะลาตั้งแต่วันที่ ${leftFromAtInput} ถึง ${leftToAtInput} นะ`,
           },
         }
       }
@@ -123,6 +180,10 @@ const app = new Elysia()
 
 function mapJoinUserNickname<T extends SelectVacationUsers>(users: T[]) {
   return users.map(user => user.userNickname).join(', ')
+}
+
+function isWeekend(value: Dayjs) {
+  return [0, 6].includes(value.day())
 }
 
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
