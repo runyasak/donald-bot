@@ -43,7 +43,7 @@ const app = new Elysia()
   .use(
     cron({
       name: 'vacation_users',
-      pattern: '30 09 * * 1-5',
+      pattern: '30 02 * * 1-5',
       async run() {
         const today = dayjs().startOf('day').toDate()
         const vacationUsers = await db.query.vacationUsersTable.findMany({
