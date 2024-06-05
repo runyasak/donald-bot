@@ -51,8 +51,8 @@ const app = new Elysia()
         })
 
         const content = vacationUsers.length === 0
-          ? `<@${Bun.env.VACATION_USERS_NOTIFICATION_MENTION_ROLE_ID}> วันนี้ไม่มีคนลานะทุกคน`
-          : `<@${Bun.env.VACATION_USERS_NOTIFICATION_MENTION_ROLE_ID}> วันนี้คนที่ลาคือ ${mapJoinUserNickname(vacationUsers)}`
+          ? `<@&${Bun.env.VACATION_USERS_NOTIFICATION_MENTION_ROLE_ID}> วันนี้ไม่มีคนลานะทุกคน`
+          : `<@&${Bun.env.VACATION_USERS_NOTIFICATION_MENTION_ROLE_ID}> วันนี้คนที่ลาคือ ${mapJoinUserNickname(vacationUsers)}`
 
         discordRequest(`/channels/${Bun.env.VACATION_USERS_NOTIFICATION_CHANNEL_ID}/messages`, {
           body: { content, tts: false },
