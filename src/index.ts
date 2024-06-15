@@ -5,9 +5,10 @@ import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
 import { logger } from '@bogeychan/elysia-logger'
+import type { Logger } from '@bogeychan/elysia-logger/src/types'
 import { db } from './db'
 import type { DiscordRequestBody } from './model'
-import type { SelectVacationUsers } from './schema'
+import type { InsertVacationUsers, SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
 import { discordRequest } from './utils'
 
@@ -150,6 +151,16 @@ const app = new Elysia()
           },
         }
       }
+
+      if (name === 'leave-today') {
+        const todayDayjs = dayjs()
+
+        return createUserVacation(
+          { userId, userNickname, leftAt: todayDayjs.toDate() },
+          log,
+          `ทุกคนวันนี้ <@${userId}> ลาหยุดนะ`,
+        )
+      }
     }
   }, {
     async beforeHandle({ request, set, body }) {
@@ -174,6 +185,22 @@ const app = new Elysia()
   })
   .get('/', () => 'Hello Donald!!')
   .listen(3000)
+
+async function createUserVacation({ userId, userNickname, leftAt }: InsertVacationUsers, log: Logger, content = '') {
+  try {
+    await db.insert(vacationUsersTable).values({ userId, userNickname, leftAt })
+
+    return {
+      type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+      data: {
+        content: content || `ทุกคน เดี๋ยว <@${userId}> จะลาวันที่ ${dayjs(leftAt).format(DATE_FORMAT)} นะ`,
+      },
+    }
+  }
+  catch (error) {
+    log.error(error, 'DB')
+  }
+}
 
 function mapJoinUserNickname<T extends SelectVacationUsers>(users: T[]) {
   return users.map(user => user.userNickname).join(', ')
