@@ -6,6 +6,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
 import { logger } from '@bogeychan/elysia-logger'
 import type { Logger } from '@bogeychan/elysia-logger/src/types'
+import holidayData from '../data/holiday.json'
 import { db } from './db'
 import type { DiscordRequestBody } from './model'
 import type { InsertVacationUsers, SelectVacationUsers } from './schema'
@@ -13,6 +14,8 @@ import { vacationUsersTable } from './schema'
 import { discordRequest } from './utils'
 
 dayjs.extend(customParseFormat)
+
+const TODAY_DAYJS = dayjs()
 
 const DATE_FORMAT = 'DD/MM/YYYY'
 
@@ -34,7 +37,13 @@ const app = new Elysia()
       name: 'vacation_users',
       pattern: '30 02 * * 1-5',
       async run() {
-        const today = dayjs().startOf('day').toDate()
+        const today = TODAY_DAYJS.startOf('day').toDate()
+
+        const isTodayHoliday = !!holidayData.find(holiday => TODAY_DAYJS.isSame(holiday.date, 'date'))
+
+        if (isTodayHoliday)
+          return
+
         const vacationUsers = await db.query.vacationUsersTable.findMany({
           where: (users, { eq }) => eq(users.leftAt, today),
         })
@@ -153,20 +162,16 @@ const app = new Elysia()
       }
 
       if (name === 'leave-today') {
-        const todayDayjs = dayjs()
-
         return createUserVacation(
-          { userId, userNickname, leftAt: todayDayjs.toDate() },
+          { userId, userNickname, leftAt: TODAY_DAYJS.toDate() },
           log,
           `ทุกคนวันนี้ <@${userId}> ลาหยุดนะ`,
         )
       }
 
       if (name === 'leave-tomorrow') {
-        const tomorrowDayjs = dayjs().add(1, 'day')
-
         return createUserVacation(
-          { userId, userNickname, leftAt: tomorrowDayjs.toDate() },
+          { userId, userNickname, leftAt: TODAY_DAYJS.add(1, 'day').toDate() },
           log,
         )
       }
