@@ -212,7 +212,10 @@ async function createUserVacation({ userId, userNickname, leftAt }: InsertVacati
 }
 
 function mapJoinUserNickname<T extends SelectVacationUsers>(users: T[]) {
-  return users.map(user => user.userNickname).join(', ')
+  return users.reduce<string[]>(
+    (acc, cur) => acc.includes(cur.userNickname) ? acc : [...acc, cur.userNickname],
+    [],
+  ).join(', ')
 }
 
 function isWeekend(value: Dayjs) {
