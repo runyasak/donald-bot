@@ -1,11 +1,7 @@
-import { drizzle } from 'drizzle-orm/node-postgres'
-import { Client } from 'pg'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
 import { vacationUsersTable } from './schema'
 
-export const client = new Client({
-  connectionString: Bun.env.DB_CONNECTION_STRING,
-  keepAlive: true,
-  ssl: true,
-})
+const client = postgres(Bun.env.DB_URL!)
 
 export const db = drizzle(client, { schema: { vacationUsersTable } })

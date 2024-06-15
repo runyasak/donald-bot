@@ -16,7 +16,7 @@
     "drizzle-kit": "^0.21.4",
     "drizzle-orm": "^0.30.10",
     "elysia": "latest",
-    "pg": "^8.11.5"
+    "postgres": "^3.4.4"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^2.18.1",

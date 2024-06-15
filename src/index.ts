@@ -5,7 +5,7 @@ import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
 import { logger } from '@bogeychan/elysia-logger'
-import { client, db } from './db'
+import { db } from './db'
 import type { DiscordRequestBody } from './model'
 import type { SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
@@ -21,8 +21,6 @@ const INVALID_DATE_RESPONSE = {
     content: 'วันที่ไม่ตรงตาม format นะ 🤬 EX: 31/05/2024',
   },
 }
-
-await client.connect()
 
 const app = new Elysia()
   .use(
