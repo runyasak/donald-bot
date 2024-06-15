@@ -46,7 +46,13 @@ const leaveTodayCommand = {
   type: 1,
 }
 
+const leaveTomorrowCommand = {
+  name: 'leave-today',
+  description: 'Take a leave tomorrow',
+  type: 1,
+}
+
 installGlobalCommands(
-  Bun.env.APP_ID || '',
-  [testCommand, leaveCommand, leaveFromToCommand, leaveTodayCommand],
+  Bun.env.APP_ID!,
+  [testCommand, leaveCommand, leaveFromToCommand, leaveTodayCommand, leaveTomorrowCommand],
 ).then(() => console.log('register success !!')).catch(reason => console.error(new Error(reason)))

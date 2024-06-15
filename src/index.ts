@@ -161,6 +161,15 @@ const app = new Elysia()
           `ทุกคนวันนี้ <@${userId}> ลาหยุดนะ`,
         )
       }
+
+      if (name === 'leave-tomorrow') {
+        const tomorrowDayjs = dayjs().add(1, 'day')
+
+        return createUserVacation(
+          { userId, userNickname, leftAt: tomorrowDayjs.toDate() },
+          log,
+        )
+      }
     }
   }, {
     async beforeHandle({ request, set, body }) {
