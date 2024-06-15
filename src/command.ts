@@ -47,7 +47,7 @@ const leaveTodayCommand = {
 }
 
 const leaveTomorrowCommand = {
-  name: 'leave-today',
+  name: 'leave-tomorrow',
   description: 'Take a leave tomorrow',
   type: 1,
 }
