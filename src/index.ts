@@ -37,12 +37,13 @@ const app = new Elysia()
       name: 'vacation_users',
       pattern: '30 02 * * 1-5',
       async run() {
+        console.log('cron vacation_users start!!')
         const today = TODAY_DAYJS.startOf('day').toDate()
 
-        const isTodayHoliday = !!holidayData.find(holiday => TODAY_DAYJS.isSame(holiday.date, 'date'))
+        const findTodayHoliday = holidayData.find(holiday => TODAY_DAYJS.isSame(holiday.date, 'date'))
 
-        if (isTodayHoliday)
-          return
+        if (findTodayHoliday)
+          return console.log('Today is holiday:', findTodayHoliday.description)
 
         const vacationUsers = await db.query.vacationUsersTable.findMany({
           where: (users, { eq }) => eq(users.leftAt, today),
@@ -56,6 +57,8 @@ const app = new Elysia()
           body: { content, tts: false },
           method: 'POST',
         })
+          .catch(err => console.error(err))
+          .finally(() => console.log('cron vacation_users finish!!'))
       },
     }),
   )
