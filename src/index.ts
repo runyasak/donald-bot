@@ -108,6 +108,7 @@ const app = new Elysia()
           }
         }
         catch (error) {
+          console.error(error)
           log.error(error, 'DB')
         }
       }
@@ -153,6 +154,7 @@ const app = new Elysia()
           await db.insert(vacationUsersTable).values(insertVacationData)
         }
         catch (error) {
+          console.error(error)
           log.error(error, 'DB')
         }
 
@@ -200,7 +202,7 @@ const app = new Elysia()
       }
     },
   })
-  .get('/', () => 'Hello Donald!!')
+  .get('/', () => db.select().from(vacationUsersTable))
   .listen(3000)
 
 async function createUserVacation({ userId, userNickname, leftAt }: InsertVacationUsers, log: Logger, content = '') {
@@ -215,6 +217,7 @@ async function createUserVacation({ userId, userNickname, leftAt }: InsertVacati
     }
   }
   catch (error) {
+    console.error(error)
     log.error(error, 'DB')
   }
 }
