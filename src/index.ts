@@ -12,10 +12,12 @@ import type { DiscordRequestBody } from './model'
 import type { InsertVacationUsers, SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
 import { discordRequest } from './utils'
+import utc from 'dayjs/plugin/utc';
 
+dayjs.extend(utc)
 dayjs.extend(customParseFormat)
 
-const TODAY_DAYJS = dayjs()
+const TODAY_DAYJS = dayjs().utc()
 
 const DATE_FORMAT = 'DD/MM/YYYY'
 
@@ -38,15 +40,16 @@ const app = new Elysia()
       pattern: '30 02 * * 1-5',
       async run() {
         console.log('cron vacation_users start!!')
-        const today = TODAY_DAYJS.startOf('day').toDate()
+        const today = TODAY_DAYJS.startOf('day');
+        const todayDate = today.toDate()
 
-        const findTodayHoliday = holidayData.find(holiday => TODAY_DAYJS.isSame(holiday.date, 'date'))
+        const findTodayHoliday = holidayData.find(holiday => today.isSame(holiday.date, 'date'))
 
         if (findTodayHoliday)
           return console.log('Today is holiday:', findTodayHoliday.description)
 
         const vacationUsers = await db.query.vacationUsersTable.findMany({
-          where: (users, { eq }) => eq(users.leftAt, today),
+          where: (users, { eq }) => eq(users.leftAt, todayDate),
         })
 
         const content = vacationUsers.length === 0
