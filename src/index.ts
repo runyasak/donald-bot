@@ -6,13 +6,13 @@ import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { cron } from '@elysiajs/cron'
 import { logger } from '@bogeychan/elysia-logger'
 import type { Logger } from '@bogeychan/elysia-logger/src/types'
+import utc from 'dayjs/plugin/utc'
 import holidayData from '../data/holiday.json'
 import { db } from './db'
 import type { DiscordRequestBody } from './model'
 import type { InsertVacationUsers, SelectVacationUsers } from './schema'
 import { vacationUsersTable } from './schema'
 import { discordRequest } from './utils'
-import utc from 'dayjs/plugin/utc';
 
 dayjs.extend(utc)
 dayjs.extend(customParseFormat)
@@ -40,7 +40,7 @@ const app = new Elysia()
       pattern: '30 02 * * 1-5',
       async run() {
         console.log('cron vacation_users start!!')
-        const today = TODAY_DAYJS.startOf('day');
+        const today = TODAY_DAYJS.startOf('day')
         const todayDate = today.toDate()
 
         const findTodayHoliday = holidayData.find(holiday => today.isSame(holiday.date, 'date'))
