@@ -19,6 +19,10 @@ dayjs.extend(customParseFormat)
 
 const TODAY_DAYJS = dayjs().utc()
 
+const TODAY_START_OF = TODAY_DAYJS.startOf('day')
+
+const TODAY_START_DATE = TODAY_START_OF.toDate()
+
 const DATE_FORMAT = 'DD/MM/YYYY'
 
 const INVALID_DATE_RESPONSE = {
@@ -40,16 +44,14 @@ const app = new Elysia()
       pattern: '30 02 * * 1-5',
       async run() {
         console.log('cron vacation_users start!!')
-        const today = TODAY_DAYJS.startOf('day')
-        const todayDate = today.toDate()
 
-        const findTodayHoliday = holidayData.find(holiday => today.isSame(holiday.date, 'date'))
+        const findTodayHoliday = holidayData.find(holiday => TODAY_START_OF.isSame(holiday.date, 'date'))
 
         if (findTodayHoliday)
           return console.log('Today is holiday:', findTodayHoliday.description)
 
         const vacationUsers = await db.query.vacationUsersTable.findMany({
-          where: (users, { eq }) => eq(users.leftAt, todayDate),
+          where: (users, { eq }) => eq(users.leftAt, TODAY_START_DATE),
         })
 
         const content = vacationUsers.length === 0
@@ -205,7 +207,9 @@ const app = new Elysia()
       }
     },
   })
-  .get('/', () => db.select().from(vacationUsersTable))
+  .get('/', () => db.query.vacationUsersTable.findMany({
+    where: (users, { eq }) => eq(users.leftAt, TODAY_START_DATE),
+  }))
   .listen(3000)
 
 async function createUserVacation({ userId, userNickname, leftAt }: InsertVacationUsers, log: Logger, content = '') {
